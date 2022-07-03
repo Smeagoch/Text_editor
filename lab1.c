@@ -1,46 +1,53 @@
 #include <stdio.h>
 #include <string.h>
+#define N 128
 
-int string_comparison(char first_word[32], char second_word[32])
+int string_comparison(char first_word[N], char second_word[N])
 {
-
-    char ch;
     int  count = 1;
-
-    for(int i = 0; i < 32; i++)
+    if (strlen(first_word) != strlen(second_word))
     {
-        if (first_word[i] == second_word[i])
+	count = 0;
+    }
+    else
+    {
+        int n = strlen(first_word);
+        for(int i = 0; i < n; i++)
         {
-  	    count = 1;
-	}
-	else
-       	{
-	    count = 0;
-	    break;
-	}
+            if (first_word[i] == second_word[i])
+            {
+  	        count = 1;
+	    }
+	    else
+       	    {
+	        count = 0;
+	        break;
+	    }
+        }
     }
     return count;
 }
 
 int main()
 {
-    char first_word[32];
-    char second_word[32];
+    char first_word[N];
+    char second_word[N];
 
-    printf ("Intput first word: ");
+    printf ("Input first word: ");
     scanf ("%s", first_word);
 
-    printf ("Intput second word: ");
+    printf ("Input second word: ");
     scanf ("%s", second_word);
 
     int count = string_comparison(first_word, second_word);
+
     if(count == 1)
     {
-        printf("This words match");
+        printf("This words match\n");
     }
     else
     {
-        printf("this word no match");
+        printf("this word no match\n");
     }
     return 0;
 }
