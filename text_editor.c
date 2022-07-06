@@ -10,9 +10,9 @@ int main()
 
     char ** pStr;
     int rows = 1;
-    pStr = malloc(rows * sizeof(char *) + rows * nbuf * sizeof(char));
-//    for ( int i = 0; i < rows; i++)
-//        pStr[i] = malloc(nbuf * sizeof(char));
+    pStr = malloc(rows * sizeof(char *)/* + rows * nbuf * sizeof(char)*/);
+    for ( int i = 0; i < rows; i++)
+        pStr[i] = malloc(nbuf * sizeof(char));
 
 
     printf ("Input your text: \n");
@@ -28,17 +28,21 @@ int main()
 	if( i == rows)
 	{
 	    rows++;
-	    pStr = realloc(pStr, rows * sizeof(char *) + rows * nbuf * sizeof(char));
+	    pStr = realloc(pStr, rows * sizeof(char *));
+	    pStr[i] = malloc(nbuf * sizeof(char));
 	}
-	pStr[i] = buffer;
+
+	for(int j = 0; j < strlen(buffer); j++)
+	    pStr[i][j] = buffer[j];
+	printf("%s\n", pStr[i]);
     }
 
     printf("Your text: \n");
     for (int i = 0; i < rows; i++)
 	printf ("%s %d\n", pStr[i], &pStr[i]);
 
-//    for (int i = 0; i < rows; i++)
-//	free(pStr[i]);
+    for (int i = 0; i < rows; i++)
+	free(pStr[i]);
     free(pStr);
     return 0;
 }
