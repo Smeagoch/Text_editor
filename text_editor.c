@@ -17,7 +17,7 @@ int str_find_word(char *pStr, char **pWord) // Find word function
 	{
 	    if( count != 1)
 	    {
-		pWord = realloc (pWord, (count) * sizeof(char *));
+		pWord = (char **)realloc (pWord, (count) * sizeof(char *));
 	    }
 	    pWord[count - 1] = pStr + i + 1;
 	    count++;
@@ -63,17 +63,16 @@ char *text_editor(char *pStr, char **pWord, int nWord) // Text editor function
 
 int main()
 {
-
     char ** pStr;
     int rows = 1;
-    pStr = malloc(rows * sizeof(char *));
+    pStr = (char **)malloc(rows * sizeof(char *));
 
     printf ("!! end - stop input !!\n");
     printf ("Input your text: \n");
     char stopStr[3] = "end";
 
     // Input text
-    for(int i = 0; i <= rows; i++)
+    for (int i = 0; i <= rows; i++)
     {
 	char buffer[NBUF];
 	fgets(buffer, NBUF, stdin); //Filling the buffer
@@ -83,18 +82,18 @@ int main()
         // The condition of stop input text
 	if (buffer[0] == stopStr[0] && buffer[1] == stopStr[1] && buffer[2] == stopStr[2])
 	{
-	    if(rows == 1 && pStr[0] == NULL)
+	    if (rows == 1 && pStr[0] == NULL)
 	    rows = 0;
 	    break;
 	}
 
 	// Allocation of place for a string
-	if( i == rows)
+	if (i == rows)
 	{
 	    rows++;
-	    pStr = realloc(pStr, rows * sizeof(char *));
+	    pStr = (char **)realloc(pStr, rows * sizeof(char *));
 	}
-	pStr[i] = malloc(strlen(buffer) * sizeof(char));
+	pStr[i] = (char *)malloc(strlen(buffer) * sizeof(char));
 
 	strcpy(pStr[i],buffer); // Copy buffer in string
     }
@@ -102,22 +101,22 @@ int main()
     //Word search and numbering
     for (int i = 0; i < rows; i++)
     {
-	char ** pWord = malloc(1 * sizeof(char *));
+	char ** pWord = (char **)malloc(1 * sizeof(char *));
 	int nWord = str_find_word(pStr[i], pWord);
 	pStr[i] = text_editor(pStr[i], pWord, nWord);
 	free(pWord);
     }
 
     // Output text
-    if(rows != 0)
-	printf("Your text: \n");
+    if (rows != 0)
+	printf ("Your text: \n");
     else
-	printf("Not text!!!");
+	printf ("Not text!!!");
     for (int i = 0; i < rows; i++)
 	printf ("%s\n", pStr[i]);
 
     // Clear mem
-    if(rows != 0)
+    if (rows != 0)
 	for (int i = 0; i < rows; i++)
 	    free(pStr[i]);
     free(pStr);
