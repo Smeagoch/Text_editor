@@ -11,60 +11,35 @@ void menu()
     printf("Add new journal ------------------1\n");
     printf("Print logs -----------------------2\n");
     printf("Search articles ------------------3\n");
-    printf("Exit -----------------------------4\n");
+    printf("Delete journsl -------------------4\n");
+    printf("Exit -----------------------------5\n");
     printf("Enter number: ");
 }
-
-/*void init(struct journal **logs)
-{
-    char name[5][10] = {"what ", "what ", "Never", "Never", "Do it"};
-    int num = 1;
-    int year = 2015;
-    char fname[5][10] = {"Nikita ", "Egor ", "Grisha ", "Nikita ", "Egor "};
-    char lname[5][10] = {"Shutov ", "Smolencev", "Nikolaev ", "Shutov ", "Smolencev"};
-    char article[5][11] = {"Sleep ", "Programmer", "Zoo ", "Never ", "Do it "};
-
-    char **Name= (char **)malloc(5 * sizeof(char *));
-    char **Fname= (char **)malloc(5 * sizeof(char *));
-    char **Lname= (char **)malloc(5 * sizeof(char *));
-    char **Article= (char **)malloc(5 * sizeof(char *));
-
-    for (int i = 0; i < 5; i++)
-    {
-    	Name[i] = (char *)malloc (strlen(name[i]) * sizeof(char));
-    	Fname[i] = (char *)malloc (strlen(fname[i]) * sizeof(char));
-    	Lname[i] = (char *)malloc (strlen(lname[i]) * sizeof(char));
-    	Article[i] = (char *)malloc (strlen(article[i]) * sizeof(char));
-
-    	strcpy(Name[i],name[i]);
-    	strcpy(Fname[i], fname[i]);
-	strcpy(Lname[i], lname[i]);
-	strcpy(Article[i], article[i]);
-
-	logs[i] = addjournal(Name[i], num, year, Fname[i], Lname[i], Article[i]);
-
-	free(Name[i]); free(Fname[i]); free(Lname[i]); free(Article[i]);
-    }
-    free(Name); free(Fname); free(Lname); free(Article);
-}*/
 
 int main()
 {
     system("clear");
-    int n = 0;
-    struct journal **logs = (struct journal **)malloc(n + 1 * sizeof(struct journal *));
+    struct journal *logs;
     char ch;
-    while (ch != 4 + '0')
+    logs = journal_out_file("journal.txt");
+    if (logs == NULL)
+    {
+	printf("File empty!!!\n");
+	printf("Enter first journal!!!\n");
+	ch = 1 + '0';
+    }
+    else
     {
 	menu();
 	ch = getchar();
-	char buffer[128];
+	getchar();
+    }
+    while (ch != 5 + '0')
+    {
+	char buffer[NBUF];
 	switch(ch - '0')
 	{
 	    case 1:
-		getchar();
-		n++;
-
 		char *name; int num; int year;
 		char *fname; char *lname; char *article;
 
@@ -103,40 +78,76 @@ int main()
                 strcpy(article, buffer);
                 strcat(article, "\0");
 
-		if (n != 1)
-		    logs = (struct journal **)realloc(logs, n + 1 * sizeof(struct journal *));
-		logs[n - 1] = addjournal(name, num, year, fname, lname, article);
+		struct journal *p = logs;
+		if (p != NULL)
+		{
+		    while ((*p).next != NULL)
+		        p = (*p).next;
+		    (*p).next = addjournal(name, num, year, fname, lname, article);
+		}
+		else
+		    logs = addjournal(name, num, year, fname, lname, article);
 
 		free(name); free(fname); free(lname); free(article);
-		sortjournal(logs, n);
+//		sortjournal(logs, n);
 		break;
 
 	    case 2:
-		getchar();
-		infojournal(logs, n);
+		infojournal(logs);
 		break;
 
 	    case 3:
-		getchar();
-		char buffer[NBUF];
-		struct journal **slogs = (struct journal **)malloc(sizeof(struct journal *));
+		struct journal *slogs;
+
 		printf("Enter author for search: ");
 		fgets (buffer, NBUF, stdin);
 		buffer[strlen(buffer) - 1] = 0;
-		int size = search(logs, n, buffer, slogs);
-		if (size != 0)
-		    infojournal(slogs, size);
-		else
+
+		slogs = search(logs, buffer);
+		infojournal(slogs);
+
+		if (slogs == NULL)
 		    printf("Not found!!!\n");
-		free(slogs);
+
+		if (slogs != NULL)
+		    freejournal(slogs);
+		break;
+
+	    case 4:
+		printf("Enter author and article for delete: ");
+		fgets(buffer, NBUF, stdin);
+		buffer[strlen(buffer) - 1] = 0;
+		struct journal *log = find_for_delete(logs, buffer);
+		if (log != NULL)
+		logs = delete_journal(logs, log);
+		else
+		    printf("This article not found!!!\n");
+		break;
+
+	    case 5:
+		printf("Goodbye!!!\n");
 		break;
 
 	    default:
-		getchar();
 		printf("Invalid number entered!!! Repeat the input!!!\n");
 		break;
 	}
+	menu();
+	ch = getchar();
+	getchar();
     }
-    freejournal(logs, n);
+    printf("Do you want to save the data to a file (y/n): ");
+    ch = getchar();
+    switch(ch - '0')
+    {
+	case 41:
+	case 73:
+	    getchar();
+	    journal_in_file(logs, "journal.txt");
+	    printf("Data saved!!!\n");
+	    break;
+	default: break;
+    }
+    freejournal(logs);
     return 0;
 }

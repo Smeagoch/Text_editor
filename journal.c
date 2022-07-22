@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <stddef.h>
+#include <math.h>
 #include "journal.h"
 
 void EnterStr(char *str)
@@ -36,10 +37,11 @@ struct journal *addjournal(char *name, int num, int year, char *fnamea, char *ln
     log->article = (char *)malloc(strlen(article) * sizeof(char));
     strcpy(log->article, article);
 
+    log->next = NULL;
     return log;
 }
 
-void sortjournal(struct journal **logs, int n)
+/*void sortjournal(struct journal *logs)
 {
     for (int i = 0; i < n - 1; i++)
     {
@@ -87,7 +89,7 @@ void sortjournal(struct journal **logs, int n)
     }
 
 }
-
+*/
 int compariseinfo(struct journal log1, struct journal log2)
 {
     int var = 1;
@@ -100,44 +102,62 @@ int compariseinfo(struct journal log1, struct journal log2)
     return var;
 }
 
-void infojournal(struct journal **logs, int n)
+void infojournal(struct journal *logs)
 {
     system("clear");
-    for (int count = 0; count < n;)
+    struct journal *p = logs;
+    while (p != NULL)
     {
-        printf("%s\n", (*logs[count]).name);
-        printf("Issue number: %d\n", (*logs[count]).number);
-        printf("Year of release: %d\n", (*logs[count]).year);
+        printf("%s\n", (*p).name);
+        printf("Issue number: %d\n", (*p).number);
+        printf("Year of release: %d\n", (*p).year);
         printf("Articles:\n");
-        int oldcount = count;
+        struct journal *oldp = p;
         printf("____________________");
-        for (int i = oldcount; i < n; i++)
+        while (p != NULL)
         {
             printf("____________________");
-            count++;
-            if (count != n)
-            {
-                if (compariseinfo(*logs[i], *logs[i + 1]) == 0)
-                {
-                    break;
-                }
-            }
+            p = (*p).next;
+            if (p != NULL)
+		if ((*p).next != NULL)
+                    if (compariseinfo(*p, (*(*p).next)) == 0)
+                    {
+                        break;
+                    }
         }
         printf("\n");
         printf("|Author's name     |");
-        for (int i = oldcount; i < count; i++)
-            printf("|%-8s %-9s|", (*logs[i]).fNameAutor, (*logs[i]).lNameAutor);
-        printf("\n");
-        for (int i = oldcount; i < count + 1; i++)
+	struct journal *pd = oldp;
+        while (pd != p)
+	{
+            printf("|%-8s %-9s|", (*pd).fNameAutor, (*pd).lNameAutor);
+            pd = (*pd).next;
+	}
+	printf("\n");
+	pd = oldp;
+        while (pd != p)
+	{
             printf("|__________________|");
-        printf("\n");
+            pd = (*pd).next;
+	}
+	printf("|__________________|");
+	printf("\n");
         printf("|Title of article  |");
-        for (int i = oldcount; i < count; i++)
-            printf("|%-18s|", (*logs[i]).article);
-        printf("\n");
-        for (int i = oldcount; i < count + 1; i++)
+	pd = oldp;
+	while (pd != p)
+	{
+            printf("|%-18s|", (*pd).article);
+            pd = (*pd).next;
+	}
+	printf("\n");
+	pd = oldp;
+	while (pd != p)
+	{
             printf("|__________________|");
-        printf("\n\n");
+            pd = (*pd).next;
+	}
+        printf("|__________________|");
+	printf("\n\n");
     }
 }
 
@@ -168,33 +188,222 @@ int search_comparise(struct journal log, char *str)
     }
 }
 
-int search(struct journal **logs, int n, char *str, struct journal **slogs)
+struct journal *search(struct journal *logs, char *str)
 {
-    struct journal **p = slogs;
-    for (int i = 0; i < n; i++)
+    struct journal *slogs = NULL;
+    struct journal *lslogs = NULL;
+    struct journal *plogs = logs;
+    while (plogs != NULL)
     {
-	if (search_comparise(*logs[i], str))
+	if (search_comparise(*plogs, str))
 	{
-	    p++;
-	    if (p - slogs != 1)
+	    struct journal *pslogs = (struct journal *)malloc(sizeof(struct journal));
+	    *pslogs = *plogs;
+	    pslogs->next = NULL;
+	    if (lslogs != NULL)
 	    {
-	        slogs = (struct journal **)realloc(slogs, (p - slogs) * sizeof(struct journal *));
+		lslogs->next = pslogs;
 	    }
-	    *(p - 1) = logs[i];
+	    else
+	    {
+		slogs = pslogs;
+		lslogs = slogs;
+	    }
 	}
+	plogs = plogs->next;
     }
-    return p - slogs;
+    return slogs;
 }
 
-void freejournal(struct journal **logs, int n)
+struct journal *find_for_delete(struct journal *logs, char *str)
 {
-    for (int i = 0; i < n; i++)
+    struct journal *p = logs;
+    char buffer[NBUF];
+    while (p != NULL)
     {
-        free((*logs[i]).name);
-        free((*logs[i]).fNameAutor);
-        free((*logs[i]).lNameAutor);
-        free((*logs[i]).article);
-	free(logs[i]);
+        strcpy(buffer, p->fNameAutor);
+	strcat(buffer, " "); strcat(buffer, p->lNameAutor);
+	strcat(buffer, " "); strcat(buffer, p->article);
+	if (strcmp(buffer, str) == 0)
+	{
+	    return p;
+	    break;
+	}
+	p = p->next;
     }
-    free(logs);
+    if (p == NULL)
+	return NULL;
+}
+
+struct journal *delete_journal(struct journal *logs, struct journal *delete_log)
+{
+    struct journal *p = logs;
+    free(delete_log->name); free(delete_log->fNameAutor); free(delete_log->lNameAutor); free(delete_log->article);
+    if (logs == delete_log)
+    {
+	p = p->next;
+	free(delete_log);
+	return p;
+    }
+    else
+    {
+        while (p != NULL)
+        {
+	    if (p->next == delete_log)
+	    {
+	        p->next = delete_log->next;
+	        free(delete_log);
+	        break;
+	    }
+	    p = p->next;
+        }
+    return logs;
+    }
+}
+
+void freejournal(struct journal *logs)
+{
+    struct journal *next;
+    for (struct journal *i = logs; (*i).next != NULL; i = next)
+    {
+        free((*i).name);
+        free((*i).fNameAutor);
+        free((*i).lNameAutor);
+        free((*i).article);
+	next = (*i).next;
+	free(i);
+    }
+}
+
+struct journal *journal_out_file(char *file_name)
+{
+    FILE *file = fopen(file_name, "r");
+    if (file == NULL)
+	return NULL;
+    char buffer[NBUF];
+    char *estr = fgets(buffer, NBUF, file);
+    struct journal *log = NULL;
+    struct journal *plog = NULL;;
+    char str[NBUF];
+
+    while (estr != NULL)
+    {
+        int i = 0;
+
+	struct journal *p = (struct journal *)malloc(sizeof(struct journal));
+
+        for (i; i < NBUF; i++)
+        {
+            if (buffer[i] == 59)
+            {
+		str[i] = 0;
+                i = i + 2;
+                break;
+            }
+            str[i] = buffer[i];
+        }
+        p->name = (char *)malloc(strlen(str) * sizeof(char));
+        strcpy(p->name, str);
+
+	int j = 0;
+        for (i, j; i < NBUF; i++, j++)
+        {
+            if (buffer[i] == 59)
+            {
+		str[j] = 0;
+                i = i + 2;
+                break;
+            }
+            str[j] = buffer[i];
+        }
+	int num = 0;
+	for (j = 0; j < strlen(str); j++)
+	    num = num + (str[j] - '0') * pow(10, strlen(str) - (j + 1));
+	p->number = num;
+
+        for (i, j = 0; i < NBUF; i++, j++)
+        {
+            if (buffer[i] == 59)
+            {
+		str[j] = 0;
+                i = i + 2;
+                break;
+            }
+            str[j] = buffer[i];
+        }
+	num = 0;
+	for (j = 0; j < strlen(str); j++)
+	    num = num + (str[j] - '0') * pow(10, strlen(str) - (j + 1));
+        p->year = num;
+
+	for (i, j = 0; i < NBUF; i++, j++)
+        {
+            if (buffer[i] == 59)
+            {
+		str[j] = 0;
+                i = i + 2;
+                break;
+            }
+            str[j] = buffer[i];
+        }
+        p->fNameAutor = (char *)malloc(strlen(str) * sizeof(char));
+        strcpy(p->fNameAutor, str);
+
+        for (i, j = 0; i < NBUF; i++, j++)
+        {
+            if (buffer[i] == 59)
+            {
+		str[j] = 0;
+                i = i + 2;
+                break;
+            }
+            str[j] = buffer[i];
+        }
+        p->lNameAutor = (char *)malloc(strlen(str) * sizeof(char));
+        strcpy(p->lNameAutor, str);
+
+        for (i, j = 0; i < NBUF; i++, j++)
+        {
+            if (buffer[i] == 59)
+            {
+		str[j] = 0;
+                i = i + 2;
+                break;
+            }
+            str[j] = buffer[i];
+        }
+        p->article = (char *)malloc(strlen(str) * sizeof(char));
+        strcpy(p->article, str);
+
+	p->next = NULL;
+
+	if (log == NULL)
+	{
+	    log = p;
+	    plog = log;
+	}
+	else
+	{
+	    plog->next = p;
+	    plog = p;
+	}
+	estr = fgets(buffer, NBUF, file);
+    }
+    fclose(file);
+    return log;
+}
+
+void journal_in_file(struct journal *logs, char *file_name)
+{
+    FILE *file = fopen(file_name, "w");
+
+    struct journal *plogs = logs;
+    while (plogs != NULL)
+    {
+	fprintf(file, "%s; %d; %d; ", plogs->name, plogs->number, plogs->year);
+	fprintf(file, "%s; %s; %s;\n", plogs->fNameAutor, plogs->lNameAutor, plogs->article);
+
+	plogs = plogs->next;
+    }
+    fclose(file);
 }
