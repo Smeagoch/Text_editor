@@ -178,14 +178,14 @@ int main()
 		buffer[strlen(buffer) - 1] = 0;
 		struct journal *log = find_for_delete(logs, buffer);
 		if (log != NULL)
-		logs = delete_journal(logs, log);
+		    logs = delete_journal(logs, log);
 		else
 		    printf("This article not found!!!\n");
 		break;
 
 	    case 4:
 		struct journal *debtors = search_debtors(logs, today_date);
-		if (slogs == NULL)
+		if (debtors != NULL)
 		{
 		    info_journal(debtors, today_date);
 		    free_journal(debtors);
