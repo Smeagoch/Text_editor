@@ -10,26 +10,28 @@ struct journal
     char *fNameAutor;
     char *lNameAutor;
     char *article;
+    struct tm date;
+    int term;
     struct journal *next;
 };
 
-void EnterStr(char *str);
+struct journal *add_journal(char *name, int num, int year_of_issue, char *fnamea, char *lnamea, char *article, int day, int mon, int year, int term);
 
-struct journal *addjournal(char *name, int num, int year, char *fnamea, char *lnamea, char *article);
+struct journal *sort_journal(struct journal *logs);
 
-void sortjournal(struct journal *logs);
+int comparise_info(struct journal log1, struct journal log2);
 
-int compariseinfo(struct journal log1, struct journal log2);
+void info_journal(struct journal *logs, struct tm *today_date);
 
-void infojournal(struct journal *logs);
+struct journal *search_author(struct journal *logs, char *str);
 
-struct journal *search(struct journal *logs, char *str);
+struct journal *search_debtors(struct journal *logs, struct tm *today_date);
 
 struct journal *find_for_delete(struct journal *logs, char *str);
 
 struct journal *delete_journal(struct journal *logs, struct journal *delete_log);
 
-void freejournal(struct journal *logs);
+void free_journal(struct journal *logs);
 
 struct journal *journal_out_file(char *file_name);
 
