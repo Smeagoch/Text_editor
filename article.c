@@ -34,7 +34,7 @@ int main()
     today_date->tm_mon++;
     today_date->tm_year += 1900;
 
-    struct journal *logs;
+    struct journal *logs = NULL;
     char ch;
 
     greeting();
@@ -59,8 +59,8 @@ int main()
     		else
     		{
 		    count = 0;
-		    break;
     		}
+		break;
 	    case 2:
 		count = 0;
 		break;
@@ -95,35 +95,35 @@ int main()
 		printf ("Enter name of the journal: ");
 		fgets (buffer, NBUF, stdin);
     		buffer[strlen(buffer) - 1] = 0;
-    		name = (char *)malloc (strlen(buffer) * sizeof (char));
+    		name = (char *) malloc(strlen(buffer) * sizeof (char));
     		strcpy(name, buffer);
 		strcat(name, "\0");
 
-		printf ("Enter number of the journal: ");
-		scanf ("%d", &num);
+		printf("Enter number of the journal: ");
+		scanf("%d", &num);
 
-		printf ("Enter year of issue of the journal: ");
-		scanf ("%d", &year_of_issue);
+		printf("Enter year of issue of the journal: ");
+		scanf("%d", &year_of_issue);
 		getchar();
 
-		printf ("Enter the author's first name: ");
-                fgets (buffer, NBUF, stdin);
+		printf("Enter the author's first name: ");
+                fgets(buffer, NBUF, stdin);
                 buffer[strlen(buffer) - 1] = 0;
-                fname = (char *)malloc (strlen(buffer) * sizeof (char));
+                fname = (char *) malloc(strlen(buffer) * sizeof (char));
                 strcpy(fname, buffer);
                 strcat(fname, "\0");
 
-		printf ("Enter the author's last name: ");
-                fgets (buffer, NBUF, stdin);
+		printf("Enter the author's last name: ");
+                fgets(buffer, NBUF, stdin);
                 buffer[strlen(buffer) - 1] = 0;
-                lname = (char *)malloc (strlen(buffer) * sizeof (char));
+                lname = (char *) malloc(strlen(buffer) * sizeof (char));
                 strcpy(lname, buffer);
                 strcat(lname, "\0");
 
-		printf ("Enter the title of the article: ");
-                fgets (buffer, NBUF, stdin);
+		printf("Enter the title of the article: ");
+                fgets(buffer, NBUF, stdin);
                 buffer[strlen(buffer) - 1] = 0;
-                article = (char *)malloc (strlen(buffer) * sizeof (char));
+                article = (char *) malloc(strlen(buffer) * sizeof (char));
                 strcpy(article, buffer);
                 strcat(article, "\0");
 
@@ -159,7 +159,7 @@ int main()
 		struct journal *slogs;
 
 		printf("Enter author for search: ");
-		fgets (buffer, NBUF, stdin);
+		fgets(buffer, NBUF, stdin);
 		buffer[strlen(buffer) - 1] = 0;
 
 		slogs = search_author(logs, buffer);

@@ -11,22 +11,22 @@
 
 struct journal *add_journal(char *name, int num, int year_of_issue, char *fnamea, char *lnamea, char *article, int day, int mon, int year, int term)
 {
-    struct journal *log = (struct journal *)malloc(sizeof(struct journal));
+    struct journal *log = (struct journal *) malloc(sizeof(struct journal));
 
-    log->name = (char *)malloc(strlen(name) * sizeof(char));
+    log->name = (char *) malloc(strlen(name) * sizeof(char));
     strcpy(log->name, name);
 
     log->number = num;
 
     log->year = year_of_issue;
 
-    log->fNameAutor = (char *)malloc(strlen(fnamea) * sizeof(char));
+    log->fNameAutor = (char *) malloc(strlen(fnamea) * sizeof(char));
     strcpy(log->fNameAutor, fnamea);
 
-    log->lNameAutor = (char *)malloc(strlen(lnamea) * sizeof(char));
+    log->lNameAutor = (char *) malloc(strlen(lnamea) * sizeof(char));
     strcpy(log->lNameAutor, lnamea);
 
-    log->article = (char *)malloc(strlen(article) * sizeof(char));
+    log->article = (char *) malloc(strlen(article) * sizeof(char));
     strcpy(log->article, article);
 
     log->date.tm_mday = day;
@@ -37,6 +37,26 @@ struct journal *add_journal(char *name, int num, int year_of_issue, char *fnamea
 
     log->next = NULL;
     return log;
+}
+
+struct journal cpy_journal(struct journal *log)
+{
+    struct journal p;
+    p.name = (char *) malloc(strlen(log->name) * sizeof(char));
+    strcpy(p.name, log->name);
+    p.number = log->number;
+    p.year = log->year;
+    p.fNameAutor = (char *) malloc(strlen(log->fNameAutor) * sizeof(char));
+    strcpy(p.fNameAutor, log->fNameAutor);
+    p.lNameAutor = (char *) malloc(strlen(log->lNameAutor) * sizeof(char));
+    strcpy(p.lNameAutor, log->lNameAutor);
+    p.article = (char *) malloc(strlen(log->article) * sizeof(char));
+    strcpy(p.article, log->article);
+    p.date.tm_mday = log->date.tm_mday;
+    p.date.tm_mon = log->date.tm_mon;
+    p.date.tm_year = log->date.tm_year;
+    p.term = log->term;
+    return p;
 }
 
 struct journal *sort_journal(struct journal *logs)
@@ -187,7 +207,7 @@ void info_journal(struct journal *logs, struct tm *today_date)
         while (pd != p)
 	{
             printf("|__________________|");
-            pd = (*pd).next;
+            pd = pd->next;
 	}
 	printf("|__________________|");
 	printf("\n");
@@ -262,21 +282,8 @@ struct journal *search_author(struct journal *logs, char *str)
     {
 	if (search_comparise(*plogs, str))
 	{
-	    struct journal *p = (struct journal *)malloc(sizeof(struct journal));
-	    p->name = (char *)malloc(strlen(plogs->name) * sizeof(char));
-	    strcpy(p->name, plogs->name);
-	    p->number = plogs->number;
-	    p->year = plogs->year;
-            p->fNameAutor = (char *)malloc(strlen(plogs->fNameAutor) * sizeof(char));
-            strcpy(p->fNameAutor, plogs->fNameAutor);
-            p->lNameAutor = (char *)malloc(strlen(plogs->lNameAutor) * sizeof(char));
-            strcpy(p->lNameAutor, plogs->lNameAutor);
-            p->article = (char *)malloc(strlen(plogs->article) * sizeof(char));
-            strcpy(p->article, plogs->article);
-	    p->date.tm_mday = plogs->date.tm_mday;
-	    p->date.tm_mon = plogs->date.tm_mon;
-	    p->date.tm_year = plogs->date.tm_year;
-	    p->term = plogs->term;
+	    struct journal *p = (struct journal *) malloc(sizeof(struct journal));
+	    *p = cpy_journal(plogs);
 
 	    p->next = NULL;
 	    if (pslogs != NULL)
@@ -307,33 +314,19 @@ struct journal *search_debtors(struct journal *logs, struct tm *today_date)
 	int elapsed_time = sum2 - sum1;
 	if (elapsed_time > (plogs->term * 31))
 	{
-	    struct journal *p = (struct journal *)malloc(sizeof(struct journal));
-            p->name = (char *)malloc(strlen(plogs->name) * sizeof(char));
-            strcpy(p->name, plogs->name);
-            p->number = plogs->number;
-            p->year = plogs->year;
-            p->fNameAutor = (char *)malloc(strlen(plogs->fNameAutor) * sizeof(char));
-            strcpy(p->fNameAutor, plogs->fNameAutor);
-            p->lNameAutor = (char *)malloc(strlen(plogs->lNameAutor) * sizeof(char));
-            strcpy(p->lNameAutor, plogs->lNameAutor);
-            p->article = (char *)malloc(strlen(plogs->article) * sizeof(char));
-            strcpy(p->article, plogs->article);
-            p->date.tm_mday = plogs->date.tm_mday;
-            p->date.tm_mon = plogs->date.tm_mon;
-            p->date.tm_year = plogs->date.tm_year;
-            p->term = plogs->term;
+	    struct journal *p = (struct journal *) malloc(sizeof(struct journal));
+	    *p = cpy_journal(plogs);
+	    p->next = NULL;
 
 	    if(slogs == NULL)
 	    {
 		slogs = p;
 		pslogs = slogs;
-		slogs->next = NULL;
 	    }
 	    else
 	    {
 		pslogs->next = p;
 		pslogs = pslogs->next;
-		pslogs->next = NULL;
 	    }
 	}
 	plogs = plogs->next;
@@ -391,13 +384,13 @@ void free_journal(struct journal *logs)
 {
     struct journal *next;
     if (logs != NULL)
-        for (struct journal *i = logs; (*i).next != NULL; i = next)
+        for (struct journal *i = logs; i != NULL; i = next)
         {
-            free((*i).name);
-            free((*i).fNameAutor);
-            free((*i).lNameAutor);
-            free((*i).article);
-	    next = (*i).next;
+            free(i->name);
+            free(i->fNameAutor);
+            free(i->lNameAutor);
+            free(i->article);
+	    next = i->next;
 	    free(i);
         }
 }
@@ -417,7 +410,7 @@ struct journal *journal_out_file(char *file_name)
     {
         int i = 0;
 
-	struct journal *p = (struct journal *)malloc(sizeof(struct journal));
+	struct journal *p = (struct journal *) malloc(sizeof(struct journal));
 
         for (i; i < NBUF; i++)
         {
@@ -429,7 +422,7 @@ struct journal *journal_out_file(char *file_name)
             }
             str[i] = buffer[i];
         }
-        p->name = (char *)malloc(strlen(str) * sizeof(char));
+        p->name = (char *) malloc(strlen(str) * sizeof(char));
         strcpy(p->name, str);
 
 	int j = 0;
@@ -473,7 +466,7 @@ struct journal *journal_out_file(char *file_name)
             }
             str[j] = buffer[i];
         }
-        p->fNameAutor = (char *)malloc(strlen(str) * sizeof(char));
+        p->fNameAutor = (char *) malloc(strlen(str) * sizeof(char));
         strcpy(p->fNameAutor, str);
 
         for (i, j = 0; i < NBUF; i++, j++)
@@ -486,7 +479,7 @@ struct journal *journal_out_file(char *file_name)
             }
             str[j] = buffer[i];
         }
-        p->lNameAutor = (char *)malloc(strlen(str) * sizeof(char));
+        p->lNameAutor = (char *) malloc(strlen(str) * sizeof(char));
         strcpy(p->lNameAutor, str);
 
         for (i, j = 0; i < NBUF; i++, j++)
@@ -499,7 +492,7 @@ struct journal *journal_out_file(char *file_name)
             }
             str[j] = buffer[i];
         }
-        p->article = (char *)malloc(strlen(str) * sizeof(char));
+        p->article = (char *) malloc(strlen(str) * sizeof(char));
         strcpy(p->article, str);
 
         for (i, j = 0; i < NBUF; i++, j++)
