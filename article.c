@@ -7,12 +7,13 @@
 #include <time.h>
 #include "journal.h"
 
-void greeting()
+void help()
 {
-    printf("Welcome to the Library's client application!!!\n\n");
-    printf("To load data from a file ---------1\n");
-    printf("For initial input ----------------2\n");
-    printf("Enter number: ");
+    printf("This program represents a library.\n");
+    printf("If you want to load data from a file, specify the file name in the input arguments: Filename.txt\n");
+    printf("Data structure in the file:\n");
+    printf("Journal name; issue number; year of issue; author's name; author's surname; article title; issue date; issue month; issue year; issue date;\n");
+    printf("Then follow the menu instructions.\n");
 }
 
 void menu()
@@ -26,9 +27,13 @@ void menu()
     printf("Enter number: ");
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-    system("clear");
+    for (int i = 1; i < argc; i++)
+    {
+	if (strcmp(argv[i], "-h") == 0)
+	    help();
+    }
     const time_t timer = time(NULL);
     struct tm *today_date = localtime(&timer);
     today_date->tm_mon++;
@@ -37,52 +42,38 @@ int main()
     struct journal *logs = NULL;
     char ch;
 
-    greeting();
-    ch = getchar(); getchar();
     char file_name[NBUF];
-    while(1)
+    for (int i = 1; i != argc; i++)
     {
-	int count = 1;
-	switch(ch - '0')
+	int size = strlen(argv[i]);
+	char format[4] = ".txt";
+	if (strcmp(&argv[i][size - 4], format) == 0)
 	{
-	    case 1:
-		printf("Enter file name: ");
-		fgets(file_name, NBUF, stdin);
-		file_name[strlen(file_name) - 1] = 0;
-		logs = journal_out_file(file_name);
-    		if (logs == NULL)
-    		{
-    		    printf("File empty!!!\n");
-    		    printf("Would you like to choose another file?(1 - yes/ 2 - no)\n");
-		    ch = getchar(); getchar();
+	    struct journal *p = NULL;
+	    p = journal_out_file(argv[i]);
+	    if (p == NULL)
+		printf("File %s empty!!!\n", argv[i]);
+	    else
+	    {
+		if (logs == NULL)
+		    logs = p;
+		else
+		{
+		    for (struct journal *i = logs; ; i = i->next)
+		    {
+			if (i->next == NULL)
+			{
+			    i->next = p;
+			    break;
+			}
+		    }
 		}
-    		else
-    		{
-		    count = 0;
-    		}
-		break;
-	    case 2:
-		count = 0;
-		break;
-	    default:
-		printf("Invalid number entered!!! Repeat the input!!!\n");
-		ch = getchar();
-		getchar();
-		break;
+	    }
 	}
-	if (count == 0)
-	    break;
     }
-    if (logs == NULL)
-    {
-	ch = 1 + '0';
-    }
-    else
-    {
-	menu();
-	ch = getchar(); getchar();
-    }
-
+    sort_journal(logs);
+    menu();
+    ch = getchar(); getchar();
     while (ch != 6 + '0')
     {
 	char buffer[NBUF];
@@ -148,7 +139,7 @@ int main()
 		    logs = add_journal(name, num, year, fname, lname, article, day, month, year, term);
 
 		free(name); free(fname); free(lname); free(article);
-		logs = sort_journal(logs);
+		sort_journal(logs);
 		break;
 
 	    case 2:

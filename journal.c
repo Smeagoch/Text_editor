@@ -59,9 +59,11 @@ struct journal cpy_journal(struct journal *log)
     return p;
 }
 
-struct journal *sort_journal(struct journal *logs)
+void sort_journal(struct journal *logs)
 {
     struct journal *iback = logs;
+    if (logs != NULL)
+    {
     for (struct journal *i = logs; i->next != NULL; i = i->next)
     {
 	struct journal *jback = i->next;
@@ -154,7 +156,7 @@ struct journal *sort_journal(struct journal *logs)
         }
 	iback = i;
     }
-    return logs;
+    }
 }
 
 int comparise_info(struct journal log1, struct journal log2)
@@ -171,7 +173,6 @@ int comparise_info(struct journal log1, struct journal log2)
 
 void info_journal(struct journal *logs, struct tm *today_date)
 {
-    system("clear");
     printf("Today: %d.%d.%d\n", today_date->tm_mday, today_date->tm_mon, today_date->tm_year);
     struct journal *p = logs;
     while (p != NULL)
@@ -402,8 +403,8 @@ struct journal *journal_out_file(char *file_name)
 	return NULL;
     char buffer[NBUF];
     char *estr = fgets(buffer, NBUF, file);
-    struct journal *log = NULL;
-    struct journal *plog = NULL;;
+    struct journal *logs = NULL;
+    struct journal *plog = NULL;
     char str[NBUF];
 
     while (estr != NULL)
@@ -557,10 +558,10 @@ struct journal *journal_out_file(char *file_name)
 
 	p->next = NULL;
 
-	if (log == NULL)
+	if (logs == NULL)
 	{
-	    log = p;
-	    plog = log;
+	    logs = p;
+	    plog = logs;
 	}
 	else
 	{
@@ -570,7 +571,7 @@ struct journal *journal_out_file(char *file_name)
 	estr = fgets(buffer, NBUF, file);
     }
     fclose(file);
-    return log;
+    return logs;
 }
 
 void journal_in_file(struct journal *logs, char *file_name)

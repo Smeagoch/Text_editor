@@ -19,7 +19,7 @@ struct journal *add_journal(char *name, int num, int year_of_issue, char *fnamea
 
 struct journal cpy_journal(struct journal *log);
 
-struct journal *sort_journal(struct journal *logs);
+void sort_journal(struct journal *logs);
 
 int comparise_info(struct journal log1, struct journal log2);
 
